@@ -99,21 +99,21 @@ const Camera = () => {
             </div>
             
             {/* Camera Label */}
-            <div className="absolute bottom-6 left-6 bg-black/90 text-white text-sm px-3 py-2 rounded-md flex items-center gap-2 z-10 backdrop-blur-sm font-medium">
+            <div className="absolute bottom-2 left-6 bg-black/90 text-white text-sm px-4 py-1 flex items-center gap-2 z-10 backdrop-blur-sm font-medium">
               <span className="w-2 h-2 bg-red-500 rounded-full inline-block animate-pulse"></span>
               {mainCamera.label}
             </div>
 
             {/* Sub Camera Cards - Horizontal alignment */}
-            <div className="absolute bottom-2 right-2 md:bottom-6 md:right-6 flex flex-row gap-2 md:gap-4 z-20">
+            <div className="absolute bottom-2 right-2 md:bottom-2 md:right-6 flex flex-row gap-2 md:gap-4 z-20">
               {subCameras.map((cam, index) => (
                 <div key={cam.id} className="flex flex-col items-center">
                   {/* Camera Label outside the card */}
-                  <div className="w-40 text-xs font-medium text-white bg-black/90 rounded-t-md text-center mb-1 py-1">
+                  <div className="w-30 text-xs font-medium text-white bg-black/90 text-center py-0.5">
                     {cam.label}
                   </div>
                   <div
-                    className="relative rounded-md overflow-hidden w-40 h-24 bg-black border border-zinc-700 shadow-xl cursor-pointer group hover:border-zinc-500 transition-all duration-200 flex flex-col items-center"
+                    className="relative overflow-hidden w-30 h-16 bg-black border border-zinc-700 shadow-xl cursor-pointer group hover:border-zinc-500 transition-all duration-200 flex flex-col items-center"
                     onClick={() => handleSubCameraClick(cam)}
                   >
                     <img
