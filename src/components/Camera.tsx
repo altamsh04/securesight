@@ -3,35 +3,25 @@ import React, { useState, useEffect } from "react";
 import { AlertTriangle, Video, Clock, ChevronRight, UserPlus, Users, CheckCircle, CameraIcon } from "lucide-react";
 import Activity from "./Activity";
 
-const cameraList = [
-  {
-    id: 1,
-    name: "Camera - 01",
-    src: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80",
-    label: "Camera - 01",
-    time: "11/7/2025 – 03:12:37",
-  },
-  {
-    id: 2,
-    name: "Camera - 02",
-    src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
-    label: "Camera - 02",
-    time: "11/7/2025 – 03:12:37",
-  },
-  {
-    id: 3,
-    name: "Camera - 03",
-    src: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800&q=80",
-    label: "Camera - 03",
-    time: "11/7/2025 – 03:12:37",
-  },
-];
+// Camera list will be fetched from API
 
 const Camera = () => {
-  const [mainCamera, setMainCamera] = useState(cameraList[0]);
-  const [subCameras, setSubCameras] = useState([cameraList[1], cameraList[2]]);
+  const [cameras, setCameras] = useState<any[]>([]);
+  const [mainCamera, setMainCamera] = useState<any>(null);
+  const [subCameras, setSubCameras] = useState<any[]>([]);
   const [incidents, setIncidents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Fetch cameras from API
+  useEffect(() => {
+    fetch("http://localhost:3000/api/cameras")
+      .then((res) => res.json())
+      .then((data) => {
+        setCameras(data);
+        setMainCamera(data[0]);
+        setSubCameras(data.slice(1, 3));
+      });
+  }, []);
 
   // Fetch incidents from API
   useEffect(() => {
@@ -44,7 +34,7 @@ const Camera = () => {
 
   // Handle resolve button click
   const handleResolve = async (id: number) => {
-    await fetch(`/api/incidents/${id}/resolve`, { method: "PATCH" });
+    await fetch(`http://localhost:3000/api/incidents/${id}/resolve`, { method: "PATCH" });
     // Refetch incidents after resolving
     setLoading(true);
     fetch("http://localhost:3000/api/incidents?resolved=false")
@@ -53,7 +43,7 @@ const Camera = () => {
       .finally(() => setLoading(false));
   };
 
-  const handleSubCameraClick = (clickedCamera: typeof cameraList[0]) => {
+  const handleSubCameraClick = (clickedCamera: any) => {
     // Swap main and clicked sub camera
     const newSubCameras = subCameras.map((cam) =>
       cam.id === clickedCamera.id ? mainCamera : cam
@@ -69,39 +59,41 @@ const Camera = () => {
         <div className="flex-shrink-0 flex flex-col relative w-full md:max-w-[700px] lg:max-w-[880px]">
           {/* Main Camera Feed Container */}
           <div className="relative rounded-xl overflow-hidden shadow-2xl bg-zinc-900 w-full" style={{ height: '55vw', maxHeight: 495, minHeight: 220 }}>
-            <img
-              src={mainCamera.src}
-              alt="Camera Feed"
-              className="w-full h-full object-cover opacity-90"
-            />
+            {mainCamera && (
+              <img
+                src={mainCamera.videoStream}
+                alt={mainCamera.name}
+                className="w-full h-full object-cover opacity-90"
+              />
+            )}
             
             {/* Date/Time Overlay */}
             <div className="absolute top-6 left-6 bg-black/90 text-white text-sm px-3 py-2 rounded-md flex items-center gap-2 z-10 backdrop-blur-sm font-medium">
               <Clock className="w-4 h-4 text-zinc-300" />
-              {mainCamera.time}
+              {mainCamera && `Camera ${mainCamera.id} : ${mainCamera.name}`}
             </div>
             
             {/* Camera Label */}
             <div className="absolute bottom-2 left-6 bg-black/90 text-white text-sm px-4 py-1 flex items-center gap-2 z-10 backdrop-blur-sm font-medium">
               <span className="w-2 h-2 bg-red-500 rounded-full inline-block animate-pulse"></span>
-              {mainCamera.label}
+              {mainCamera && `Camera ${mainCamera.id} : ${mainCamera.name}`}
             </div>
 
             {/* Sub Camera Cards - Horizontal alignment */}
             <div className="absolute bottom-2 right-2 md:bottom-2 md:right-6 flex flex-row gap-2 md:gap-4 z-20">
-              {subCameras.map((cam, index) => (
+              {subCameras.map((cam: any, index: number) => (
                 <div key={cam.id} className="flex flex-col items-center">
                   {/* Camera Label outside the card */}
-                  <div className="w-30 text-xs font-medium text-white bg-black/90 text-center py-0.5">
-                    {cam.label}
+                  <div className="w-30 text-xs font-medium text-white bg-black/90 text-center py-0.5 truncate">
+                    {`Camera ${cam.id} : ${cam.name}`}
                   </div>
                   <div
                     className="relative overflow-hidden w-30 h-16 bg-black border border-zinc-700 shadow-xl cursor-pointer group hover:border-zinc-500 transition-all duration-200 flex flex-col items-center"
                     onClick={() => handleSubCameraClick(cam)}
                   >
                     <img
-                      src={cam.src}
-                      alt={cam.label}
+                      src={cam.videoStream}
+                      alt={cam.name}
                       className="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
                     />
                     {/* Menu dots (vertical, sized to fit under label) */}
