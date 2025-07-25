@@ -48,7 +48,7 @@ const Activity = () => {
           const camId = incident.camera.id;
           if (!grouped[camId]) {
             grouped[camId] = { 
-              name: incident.camera.name + " : Camera " + incident.camera.id, 
+              name: "Camera " + incident.camera.id + " : " + incident.camera.name,
               events: [] 
             };
           }
@@ -67,8 +67,8 @@ const Activity = () => {
 
     fetchData();
     
-    // Set up polling to refresh data every 30 seconds
-    const interval = setInterval(fetchData, 30000);
+    // Set up polling to refresh data every 10 min
+    const interval = setInterval(fetchData, 600000);
     
     return () => clearInterval(interval);
   }, []);
