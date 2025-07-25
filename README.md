@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SecureSight
 
-## Getting Started
+SecureSight is a modern CCTV monitoring dashboard built with Next.js, Prisma, and Supabase. It provides real-time incident tracking, camera management, and a visually rich activity timeline for security operations.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Deployment Instructions
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **Clone the repository:**
+   ```bash
+   git clone <your-repo-url>
+   cd securesight
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **Set up environment variables:**
+   - Copy `.env.example` to `.env` and fill in your Supabase/Postgres credentials:
+     ```env
+     DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<db>
+     ```
 
-## Learn More
+4. **Prisma setup:**
+   - Generate the Prisma client:
+     ```bash
+     npx prisma generate
+     ```
+   - Run migrations (after editing `prisma/schema.prisma`):
+     ```bash
+     npx prisma migrate dev --name init
+     ```
+   - (Optional) Seed the database:
+     ```bash
+     npx prisma db seed
+     ```
 
-To learn more about Next.js, take a look at the following resources:
+5. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+   The app will be available at [http://localhost:3000](http://localhost:3000)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ Tech Decisions
 
-## Deploy on Vercel
+- **Next.js (App Router):** For modern, file-based routing and server components.
+- **Prisma ORM:** Type-safe database access and migrations.
+- **Supabase (Postgres):** Managed Postgres database with easy cloud setup.
+- **Tailwind CSS:** Utility-first styling for rapid UI development.
+- **RESTful API routes:** For clear separation of backend logic and frontend consumption.
+- **Polling (Activity Timeline):** The timeline auto-refreshes every 30 seconds for near real-time updates.
+- **Robust error handling:** Fallbacks and clear error messages for API/database issues.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 💡 If I Had More Time…
+- Add authentication and role-based access control (e.g., admin vs. viewer).
+- Implement WebSocket or Supabase Realtime for instant updates (no polling).
+- Add camera health/status monitoring and alerts.
+- Support for video playback and event review.
+- Advanced filtering and search for incidents.
+- Responsive mobile UI and accessibility improvements.
+- Integration with external alerting/notification systems (email, SMS, etc.).
+- More granular permissions and audit logging.
+- Unit and integration tests for critical components and APIs.
+- Dockerize for easy deployment.
+
+---
+
+## 📋 Project Overview
+
+- **Cameras:**
+  - Each camera has an `id`, `name`, `location`, and `videoStream` (URL).
+- **Incidents:**
+  - Each incident is linked to a camera and includes type, timestamps, thumbnail, and resolved status.
+- **Features:**
+  - View all cameras and their live streams.
+  - See all unresolved incidents and resolve them with one click.
+  - Activity timeline visualizes incidents per camera, with type icons and proportional bars.
+  - Modern, responsive UI with clear status indicators.
+
+---
+
+## 🤝 Contributing
+
+PRs and suggestions are welcome! Please open an issue or submit a pull request.
+
+---
+
+## 📝 License
+
+MIT
