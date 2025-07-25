@@ -57,7 +57,7 @@ SecureSight is a modern CCTV monitoring dashboard built with Next.js, Prisma, an
 
 ---
 
-## 💡 If I Had More Time…
+## 💡 Future Improvements
 - Add authentication and role-based access control (e.g., admin vs. viewer).
 - Implement WebSocket or Supabase Realtime for instant updates (no polling).
 - Add camera health/status monitoring and alerts.
@@ -82,12 +82,6 @@ SecureSight is a modern CCTV monitoring dashboard built with Next.js, Prisma, an
   - See all unresolved incidents and resolve them with one click.
   - Activity timeline visualizes incidents per camera, with type icons and proportional bars.
   - Modern, responsive UI with clear status indicators.
-
----
-
-## 🤝 Contributing
-
-PRs and suggestions are welcome! Please open an issue or submit a pull request.
 
 ---
 
