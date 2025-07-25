@@ -1,46 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AlertTriangle, Video, Clock, ChevronRight, UserPlus, Users, CheckCircle, CameraIcon } from "lucide-react";
 import Activity from "./Activity";
-
-const incidents = [
-  {
-    id: 1,
-    type: "Unauthorised Access",
-    icon: <AlertTriangle className="w-5 h-5 text-orange-400" />,
-    image: "https://placehold.co/120x67",
-    camera: "Shop Floor Camera A",
-    time: "14:35 - 14:37 on 7-Jul-2025",
-    resolve: true,
-  },
-  {
-    id: 2,
-    type: "Gun Threat",
-    icon: <Video className="w-5 h-5 text-red-500" />,
-    image: "https://placehold.co/120x67",
-    camera: "Shop Floor Camera A",
-    time: "14:35 - 14:37 on 7-Jul-2025",
-    resolve: true,
-  },
-  {
-    id: 3,
-    type: "Unauthorised Access",
-    icon: <AlertTriangle className="w-5 h-5 text-orange-400" />,
-    image: "https://placehold.co/120x67",
-    camera: "Shop Floor Camera A",
-    time: "14:35 - 14:37 on 7-Jul-2025",
-    resolve: true,
-  },
-  {
-    id: 4,
-    type: "Unauthorised Access",
-    icon: <AlertTriangle className="w-5 h-5 text-orange-400" />,
-    image: "https://placehold.co/120x67",
-    camera: "Shop Floor Camera A",
-    time: "14:35 - 14:37 on 7-Jul-2025",
-    resolve: true,
-  },
-];
 
 const cameraList = [
   {
@@ -69,6 +30,28 @@ const cameraList = [
 const Camera = () => {
   const [mainCamera, setMainCamera] = useState(cameraList[0]);
   const [subCameras, setSubCameras] = useState([cameraList[1], cameraList[2]]);
+  const [incidents, setIncidents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch incidents from API
+  useEffect(() => {
+    setLoading(true);
+    fetch("http://localhost:3000/api/incidents?resolved=false")
+      .then((res) => res.json())
+      .then((data) => setIncidents(data))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Handle resolve button click
+  const handleResolve = async (id: number) => {
+    await fetch(`/api/incidents/${id}/resolve`, { method: "PATCH" });
+    // Refetch incidents after resolving
+    setLoading(true);
+    fetch("http://localhost:3000/api/incidents?resolved=false")
+      .then((res) => res.json())
+      .then((data) => setIncidents(data))
+      .finally(() => setLoading(false));
+  };
 
   const handleSubCameraClick = (clickedCamera: typeof cameraList[0]) => {
     // Swap main and clicked sub camera
@@ -139,7 +122,7 @@ const Camera = () => {
           <div className="bg-black/80 border-l border-zinc-800 p-2 md:p-4 lg:p-6 h-full rounded-2xl shadow-2xl flex flex-col backdrop-blur-sm" style={{minHeight: 350, height: '100%'}}>
             <div className="flex items-center gap-2 mb-6">
               <AlertTriangle className="w-6 h-6 text-red-500" />
-              <span className="text-white text-lg font-semibold">15 Unresolved Incidents</span>
+              <span className="text-white text-lg font-semibold">{incidents.length} Unresolved Incidents</span>
               <div className="flex-1"></div>
               <button className="flex items-center gap-1 bg-zinc-900 text-xs text-white/80 px-2 py-1 rounded-full border border-zinc-700 mr-2 hover:bg-zinc-800 transition-colors">
                 <UserPlus className="w-4 h-4 text-orange-400" />
@@ -154,37 +137,42 @@ const Camera = () => {
             </div>
             
             <div className="flex-1 overflow-y-auto pr-1 md:pr-2 space-y-4 scrollbar-hide" style={{maxHeight: 400}}>
-              {incidents.map((incident) => (
-                <div key={incident.id} className="flex gap-3 items-start bg-zinc-900/80 rounded-lg p-4 border border-zinc-800/50 hover:bg-zinc-900/90 transition-colors">
-                  <img
-                    src={incident.image}
-                    alt={incident.type}
-                    style={{ width: 120, height: 67.2 }}
-                    className="object-cover rounded-md border border-zinc-700"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      {incident.icon}
-                      <span className={`font-semibold text-sm ${incident.type === 'Gun Threat' ? 'text-red-500' : 'text-orange-400'}`}>
-                        {incident.type}
-                      </span>
+              {loading ? (
+                <div className="text-white">Loading...</div>
+              ) : (
+                incidents.map((incident) => (
+                  <div key={incident.id} className="flex gap-3 items-start bg-zinc-900/80 rounded-lg p-4 border border-zinc-800/50 hover:bg-zinc-900/90 transition-colors">
+                    <img
+                      src={incident.thumbnailUrl || incident.image}
+                      alt={incident.type}
+                      style={{ width: 120, height: 67.2 }}
+                      className="object-cover rounded-md border border-zinc-700"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        {/* You can add icons based on incident.type if needed */}
+                        <span className={`font-semibold text-sm ${incident.type === 'Gun Threat' ? 'text-red-500' : 'text-orange-400'}`}>
+                          {incident.type}
+                        </span>
+                      </div>
+                      <div className="text-xs text-zinc-300 flex items-center gap-1 mt-1">
+                        <CameraIcon className="w-4 h-4 text-zinc-400" />
+                        {incident.camera.name + " : " + "Camera " + incident.camera.id}
+                      </div>
+                      <div className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
+                        <Clock className="w-4 h-4 text-zinc-400" />
+                        {new Date(incident.tsStart).toLocaleString()} - {new Date(incident.tsEnd).toLocaleString()}
+                      </div>
                     </div>
-                    <div className="text-xs text-zinc-300 flex items-center gap-1 mt-1">
-                      <CameraIcon className="w-4 h-4 text-zinc-400" />
-                      {incident.camera}
-                    </div>
-                    <div className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
-                      <Clock className="w-4 h-4 text-zinc-400" />
-                      {incident.time}
-                    </div>
-                  </div>
-                  {incident.resolve && (
-                    <button className="ml-2 text-yellow-400 text-xs md:text-sm font-semibold flex items-center gap-1 hover:text-yellow-300 transition-colors cursor-pointer">
+                    <button
+                      className="ml-2 text-yellow-400 text-xs md:text-sm font-semibold flex items-center gap-1 hover:text-yellow-300 transition-colors cursor-pointer"
+                      onClick={() => handleResolve(incident.id)}
+                    >
                       Resolve <ChevronRight className="w-4 h-4" />
                     </button>
-                  )}
-                </div>
-              ))}
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </aside>
