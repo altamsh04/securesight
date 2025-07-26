@@ -10,7 +10,7 @@ SecureSight is a modern, full-stack CCTV monitoring dashboard for security opera
 
 1. **Clone the repository:**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/altamsh04/securesight.git
    cd securesight
    ```
 
@@ -22,9 +22,10 @@ SecureSight is a modern, full-stack CCTV monitoring dashboard for security opera
 3. **Set up environment variables:**
    - Copy `.env.example` to `.env` and fill in your Supabase/Postgres credentials:
      ```env
-     DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<db>
-     NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-     NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+      DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<db>
+      NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+      NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+      NEXT_PUBLIC_API_URL=yout-backend-api-endpoint
      ```
 
 4. **Prisma setup:**
@@ -98,7 +99,7 @@ SecureSight is a modern, full-stack CCTV monitoring dashboard for security opera
 
 ---
 
-## 💡 If I Had More Time…
+## 💡 Future Ideas
 - Add role-based access control (e.g., admin vs. viewer).
 - Implement WebSocket or Supabase Realtime for instant updates (no polling).
 - Camera health/status monitoring and alerts.
@@ -122,12 +123,6 @@ SecureSight is a modern, full-stack CCTV monitoring dashboard for security opera
   - See all unresolved incidents and resolve them with one click.
   - Activity timeline visualizes incidents per camera, with type icons and proportional bars.
   - Modern, responsive UI with clear status indicators.
-
----
-
-## 🤝 Contributing
-
-PRs and suggestions are welcome! Please open an issue or submit a pull request.
 
 ---
 
