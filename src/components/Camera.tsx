@@ -1,24 +1,41 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { AlertTriangle, Video, Clock, ChevronRight, UserPlus, Users, CheckCircle, CameraIcon, Loader2 } from "lucide-react";
+import { AlertTriangle, Clock, ChevronRight, UserPlus, Users, CheckCircle, CameraIcon, Loader2 } from "lucide-react";
 import Activity from "./Activity";
 
-// Camera list will be fetched from API
+// Define types
+interface Camera {
+  id: number;
+  name: string;
+  location: string;
+  videoStream: string;
+}
+
+interface Incident {
+  id: number;
+  type: string;
+  tsStart: string;
+  tsEnd: string;
+  thumbnailUrl: string;
+  image?: string;
+  camera: {
+    id: number;
+    name: string;
+  };
+}
 
 const Camera = () => {
-  const [cameras, setCameras] = useState<any[]>([]);
-  const [mainCamera, setMainCamera] = useState<any>(null);
-  const [subCameras, setSubCameras] = useState<any[]>([]);
-  const [incidents, setIncidents] = useState<any[]>([]);
+  const [mainCamera, setMainCamera] = useState<Camera | null>(null);
+  const [subCameras, setSubCameras] = useState<Camera[]>([]);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(false);
   const [resolvingIds, setResolvingIds] = useState<Set<number>>(new Set());
 
   // Fetch cameras from API
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cameras`)
+    fetch("http://localhost:3000/api/cameras")
       .then((res) => res.json())
-      .then((data) => {
-        setCameras(data);
+      .then((data: Camera[]) => {
         setMainCamera(data[0]);
         setSubCameras(data.slice(1, 3));
       });
@@ -27,9 +44,9 @@ const Camera = () => {
   // Fetch incidents from API
   useEffect(() => {
     setLoading(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/incidents?resolved=false`)
+    fetch("http://localhost:3000/api/incidents?resolved=false")
       .then((res) => res.json())
-      .then((data) => setIncidents(data))
+      .then((data: Incident[]) => setIncidents(data))
       .finally(() => setLoading(false));
   }, []);
 
@@ -39,10 +56,10 @@ const Camera = () => {
     setResolvingIds(prev => new Set(prev).add(id));
     
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/incidents/${id}/resolve`, { method: "PATCH" });
+      await fetch(`http://localhost:3000/api/incidents/${id}/resolve`, { method: "PATCH" });
       // Refetch incidents after resolving
       setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/incidents?resolved=false`);
+      const response = await fetch("http://localhost:3000/api/incidents?resolved=false");
       const data = await response.json();
       setIncidents(data);
     } catch (error) {
@@ -58,10 +75,10 @@ const Camera = () => {
     }
   };
 
-  const handleSubCameraClick = (clickedCamera: any) => {
+  const handleSubCameraClick = (clickedCamera: Camera) => {
     // Swap main and clicked sub camera
     const newSubCameras = subCameras.map((cam) =>
-      cam.id === clickedCamera.id ? mainCamera : cam
+      cam.id === clickedCamera.id ? mainCamera! : cam
     );
     setMainCamera(clickedCamera);
     setSubCameras(newSubCameras);
@@ -96,7 +113,7 @@ const Camera = () => {
 
             {/* Sub Camera Cards - Horizontal alignment */}
             <div className="absolute bottom-2 right-2 md:bottom-2 md:right-6 flex flex-row gap-2 md:gap-4 z-20">
-              {subCameras.map((cam: any, index: number) => (
+              {subCameras.map((cam: Camera) => (
                 <div key={cam.id} className="flex flex-col items-center">
                   {/* Camera Label outside the card */}
                   <div className="w-30 text-xs font-medium text-white bg-black/90 text-center py-0.5 truncate">

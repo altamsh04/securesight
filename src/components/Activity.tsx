@@ -1,6 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { Play, Rewind, FastForward, Volume2, RotateCcw, SkipForward, AlertTriangle, Users, Lock, Car, Cctv } from "lucide-react";
 
+// Define types
+interface Incident {
+  id: number;
+  type: string;
+  tsStart: string;
+  tsEnd: string;
+  camera: {
+    id: number;
+    name: string;
+  };
+}
+
+interface Camera {
+  name: string;
+  events: Incident[];
+}
+
 // Helper to assign color and icon based on type
 const typeMeta: Record<string, { color: string; pColor: string; icon: React.ReactNode }> = {
   "Unauthorised Access": { color: "#431407", pColor: "#F97316", icon: <Lock className="w-4 h-4" /> },
@@ -12,7 +29,6 @@ const typeMeta: Record<string, { color: string; pColor: string; icon: React.Reac
 // Helper to get left offset and width as percent of 24h
 const getTimelineMetrics = (start: Date, end: Date) => {
   const startH = start.getHours() + start.getMinutes() / 60;
-  const endH = end.getHours() + end.getMinutes() / 60;
   const left = (startH / 24) * 100;
   let width = ((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) * 100; // percent of 24h
   // Minimum width for visibility
@@ -21,7 +37,7 @@ const getTimelineMetrics = (start: Date, end: Date) => {
 };
 
 // API service functions
-const fetchIncidents = async () => {
+const fetchIncidents = async (): Promise<Incident[]> => {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/incidents?resolved=false`);
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
@@ -30,7 +46,7 @@ const fetchIncidents = async () => {
 };
 
 const Activity = () => {
-  const [cameras, setCameras] = useState<any[]>([]);
+  const [cameras, setCameras] = useState<Camera[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,8 +59,8 @@ const Activity = () => {
         const data = await fetchIncidents();
         
         // Group by camera
-        const grouped: Record<string, any> = {};
-        data.forEach((incident: any) => {
+        const grouped: Record<string, Camera> = {};
+        data.forEach((incident: Incident) => {
           const camId = incident.camera.id;
           if (!grouped[camId]) {
             grouped[camId] = { 
@@ -141,7 +157,7 @@ const Activity = () => {
         {/* Camera List */}
         <div className="w-64 bg-[#131313] rounded-lg">
           <h3 className="text-white text-lg font-medium px-3 py-4">Camera List</h3>
-          {cameras.map((camera: any, idx: number) => (
+          {cameras.map((camera: Camera) => (
             <div key={camera.name} className="flex items-center px-4 text-gray-300 h-16 hover:bg-[#1a1a1a] transition-colors cursor-pointer">
               <span className="mr-3"><Cctv className="w-5 h-5" /></span>
               <span className="text-sm">{camera.name}</span>
@@ -179,7 +195,7 @@ const Activity = () => {
 
           {/* Camera Rows */}
           <div className="relative">
-            {cameras.map((camera: any, cameraIndex: number) => (
+            {cameras.map((camera: Camera) => (
               <div key={camera.name} className="h-16 relative flex items-center group hover:bg-[#232323] transition-colors duration-150">
                 {/* Yellow Current Time Line */}
                 <div 
@@ -188,15 +204,15 @@ const Activity = () => {
                 ></div>
                 
                 {/* Events */}
-                {camera.events.map((incident: any, eventIndex: number) => {
-                  const meta = typeMeta[incident.type as string] || { 
+                {camera.events.map((incident: Incident, eventIndex: number) => {
+                  const meta = typeMeta[incident.type] || { 
                     color: "#1C1917", 
                     pColor: "#6B7280", 
                     icon: <AlertTriangle className="w-4 h-4" /> 
                   };
                   const start = new Date(incident.tsStart);
                   const end = new Date(incident.tsEnd);
-                  const { left, width } = getTimelineMetrics(start, end);
+                  const { left } = getTimelineMetrics(start, end);
                   
                   return (
                     <div
