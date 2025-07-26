@@ -33,7 +33,7 @@ const Camera = () => {
 
   // Fetch cameras from API
   useEffect(() => {
-    fetch("http://localhost:3000/api/cameras")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cameras`)
       .then((res) => res.json())
       .then((data: Camera[]) => {
         setMainCamera(data[0]);
@@ -44,7 +44,7 @@ const Camera = () => {
   // Fetch incidents from API
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:3000/api/incidents?resolved=false")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/incidents?resolved=false`)
       .then((res) => res.json())
       .then((data: Incident[]) => setIncidents(data))
       .finally(() => setLoading(false));
@@ -56,10 +56,10 @@ const Camera = () => {
     setResolvingIds(prev => new Set(prev).add(id));
     
     try {
-      await fetch(`http://localhost:3000/api/incidents/${id}/resolve`, { method: "PATCH" });
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/incidents/${id}/resolve`, { method: "PATCH" });
       // Refetch incidents after resolving
       setLoading(true);
-      const response = await fetch("http://localhost:3000/api/incidents?resolved=false");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/incidents?resolved=false`);
       const data = await response.json();
       setIncidents(data);
     } catch (error) {
