@@ -6,9 +6,9 @@ async function main() {
   // Create Cameras
   const cameras = await prisma.camera.createMany({
     data: [
-      { name: 'Shop Floor A', location: 'Ground Floor' },
-      { name: 'Vault', location: 'Basement' },
-      { name: 'Entrance', location: 'Main Gate' },
+      { name: 'Shop Floor A', location: 'Ground Floor', videoStream: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop' },
+      { name: 'Vault', location: 'Basement', videoStream: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop' },
+      { name: 'Entrance', location: 'Main Gate', videoStream: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop' },
     ],
   });
 
