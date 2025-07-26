@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Navbar, { CameraBar } from '../components/Navbar';
-import Camera from '../components/Camera';
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,8 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body style={{ fontFamily: 'system-ui, sans-serif' }}>
-        <Navbar />
-        <Camera />
+        {children}
       </body>
     </html>
   );

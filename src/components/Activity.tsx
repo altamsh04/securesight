@@ -22,7 +22,7 @@ const getTimelineMetrics = (start: Date, end: Date) => {
 
 // API service functions
 const fetchIncidents = async () => {
-  const response = await fetch("http://localhost:3000/api/incidents?resolved=false");
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/incidents?resolved=false`);
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }

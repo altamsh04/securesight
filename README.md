@@ -1,6 +1,8 @@
 # SecureSight
 
-SecureSight is a modern CCTV monitoring dashboard built with Next.js, Prisma, and Supabase. It provides real-time incident tracking, camera management, and a visually rich activity timeline for security operations.
+![SecureSight Dashboard](https://github.com/user-attachments/assets/39b30809-109b-4152-aa31-f522ee36d5b5)
+
+SecureSight is a modern, full-stack CCTV monitoring dashboard for security operations. Built with Next.js, Prisma, Supabase, and Tailwind CSS, it provides real-time incident tracking, camera management, and a visually rich activity timeline. The platform is designed for security teams to monitor, resolve, and analyze incidents efficiently.
 
 ---
 
@@ -21,6 +23,8 @@ SecureSight is a modern CCTV monitoring dashboard built with Next.js, Prisma, an
    - Copy `.env.example` to `.env` and fill in your Supabase/Postgres credentials:
      ```env
      DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<db>
+     NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+     NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
      ```
 
 4. **Prisma setup:**
@@ -28,7 +32,7 @@ SecureSight is a modern CCTV monitoring dashboard built with Next.js, Prisma, an
      ```bash
      npx prisma generate
      ```
-   - Run migrations (after editing `prisma/schema.prisma`):
+   - Run migrations:
      ```bash
      npx prisma migrate dev --name init
      ```
@@ -45,23 +49,60 @@ SecureSight is a modern CCTV monitoring dashboard built with Next.js, Prisma, an
 
 ---
 
-## 🛠️ Tech Decisions
+## 🛡️ Authentication
 
-- **Next.js (App Router):** For modern, file-based routing and server components.
-- **Prisma ORM:** Type-safe database access and migrations.
-- **Supabase (Postgres):** Managed Postgres database with easy cloud setup.
-- **Tailwind CSS:** Utility-first styling for rapid UI development.
-- **RESTful API routes:** For clear separation of backend logic and frontend consumption.
-- **Polling (Activity Timeline):** The timeline auto-refreshes every 30 seconds for near real-time updates.
-- **Robust error handling:** Fallbacks and clear error messages for API/database issues.
+- **Admin login** is required to access the dashboard and all APIs.
+- Uses [Supabase Auth](https://supabase.com/docs/guides/auth) (email/password).
+- Only authenticated users can access the dashboard and protected API endpoints.
 
 ---
 
-## 💡 Future Improvements
-- Add authentication and role-based access control (e.g., admin vs. viewer).
+## 📋 API Overview
+
+### Cameras
+- `GET /api/cameras` — List all cameras with:
+  - `id`, `name`, `location`, `videoStream`
+
+### Incidents
+- `GET /api/incidents?resolved=false` — List all unresolved incidents (newest first)
+- `PATCH /api/incidents/:id/resolve` — Flip the resolved status of an incident and return the updated row
+
+#### Example Incident Object
+```json
+{
+  "id": 1,
+  "cameraId": 2,
+  "type": "Gun Threat",
+  "tsStart": "2025-07-24T01:21:15.354Z",
+  "tsEnd": "2025-07-24T01:39:15.354Z",
+  "thumbnailUrl": "https://...",
+  "resolved": false,
+  "camera": {
+    "id": 2,
+    "name": "Vault",
+    "location": "Basement",
+    "videoStream": "https://..."
+  }
+}
+```
+
+---
+
+## 🛠️ Tech Decisions
+- **Next.js (App Router):** Modern, file-based routing and server components.
+- **Prisma ORM:** Type-safe database access and migrations.
+- **Supabase (Postgres & Auth):** Managed Postgres and secure authentication.
+- **Tailwind CSS:** Utility-first styling for rapid UI development.
+- **RESTful API routes:** Clear separation of backend logic and frontend consumption.
+- **Polling (Activity Timeline):** Timeline auto-refreshes every 30 seconds for near real-time updates.
+
+---
+
+## 💡 If I Had More Time…
+- Add role-based access control (e.g., admin vs. viewer).
 - Implement WebSocket or Supabase Realtime for instant updates (no polling).
-- Add camera health/status monitoring and alerts.
-- Support for video playback and event review.
+- Camera health/status monitoring and alerts.
+- Video playback and event review.
 - Advanced filtering and search for incidents.
 - Responsive mobile UI and accessibility improvements.
 - Integration with external alerting/notification systems (email, SMS, etc.).
@@ -71,8 +112,7 @@ SecureSight is a modern CCTV monitoring dashboard built with Next.js, Prisma, an
 
 ---
 
-## 📋 Project Overview
-
+## 📊 Project Features
 - **Cameras:**
   - Each camera has an `id`, `name`, `location`, and `videoStream` (URL).
 - **Incidents:**
@@ -82,6 +122,12 @@ SecureSight is a modern CCTV monitoring dashboard built with Next.js, Prisma, an
   - See all unresolved incidents and resolve them with one click.
   - Activity timeline visualizes incidents per camera, with type icons and proportional bars.
   - Modern, responsive UI with clear status indicators.
+
+---
+
+## 🤝 Contributing
+
+PRs and suggestions are welcome! Please open an issue or submit a pull request.
 
 ---
 

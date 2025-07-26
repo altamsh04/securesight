@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { AlertTriangle, Video, Clock, ChevronRight, UserPlus, Users, CheckCircle, CameraIcon } from "lucide-react";
+import { AlertTriangle, Video, Clock, ChevronRight, UserPlus, Users, CheckCircle, CameraIcon, Loader2 } from "lucide-react";
 import Activity from "./Activity";
 
 // Camera list will be fetched from API
@@ -11,10 +11,11 @@ const Camera = () => {
   const [subCameras, setSubCameras] = useState<any[]>([]);
   const [incidents, setIncidents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [resolvingIds, setResolvingIds] = useState<Set<number>>(new Set());
 
   // Fetch cameras from API
   useEffect(() => {
-    fetch("http://localhost:3000/api/cameras")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cameras`)
       .then((res) => res.json())
       .then((data) => {
         setCameras(data);
@@ -26,7 +27,7 @@ const Camera = () => {
   // Fetch incidents from API
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:3000/api/incidents?resolved=false")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/incidents?resolved=false`)
       .then((res) => res.json())
       .then((data) => setIncidents(data))
       .finally(() => setLoading(false));
@@ -34,13 +35,27 @@ const Camera = () => {
 
   // Handle resolve button click
   const handleResolve = async (id: number) => {
-    await fetch(`http://localhost:3000/api/incidents/${id}/resolve`, { method: "PATCH" });
-    // Refetch incidents after resolving
-    setLoading(true);
-    fetch("http://localhost:3000/api/incidents?resolved=false")
-      .then((res) => res.json())
-      .then((data) => setIncidents(data))
-      .finally(() => setLoading(false));
+    // Add the incident ID to the resolving set
+    setResolvingIds(prev => new Set(prev).add(id));
+    
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/incidents/${id}/resolve`, { method: "PATCH" });
+      // Refetch incidents after resolving
+      setLoading(true);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/incidents?resolved=false`);
+      const data = await response.json();
+      setIncidents(data);
+    } catch (error) {
+      console.error('Error resolving incident:', error);
+    } finally {
+      // Remove the incident ID from the resolving set
+      setResolvingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+      setLoading(false);
+    }
   };
 
   const handleSubCameraClick = (clickedCamera: any) => {
@@ -132,38 +147,55 @@ const Camera = () => {
               {loading ? (
                 <div className="text-white">Loading...</div>
               ) : (
-                incidents.map((incident) => (
-                  <div key={incident.id} className="flex gap-3 items-start bg-zinc-900/80 rounded-lg p-4 border border-zinc-800/50 hover:bg-zinc-900/90 transition-colors">
-                    <img
-                      src={incident.thumbnailUrl || incident.image}
-                      alt={incident.type}
-                      style={{ width: 120, height: 67.2 }}
-                      className="object-cover rounded-md border border-zinc-700"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        {/* You can add icons based on incident.type if needed */}
-                        <span className={`font-semibold text-sm ${incident.type === 'Gun Threat' ? 'text-red-500' : 'text-orange-400'}`}>
-                          {incident.type}
-                        </span>
+                incidents.map((incident) => {
+                  const isResolving = resolvingIds.has(incident.id);
+                  return (
+                    <div key={incident.id} className="flex gap-3 items-start bg-zinc-900/80 rounded-lg p-4 border border-zinc-800/50 hover:bg-zinc-900/90 transition-colors">
+                      <img
+                        src={incident.thumbnailUrl || incident.image}
+                        alt={incident.type}
+                        style={{ width: 120, height: 67.2 }}
+                        className="object-cover rounded-md border border-zinc-700"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          {/* You can add icons based on incident.type if needed */}
+                          <span className={`font-semibold text-sm ${incident.type === 'Gun Threat' ? 'text-red-500' : 'text-orange-400'}`}>
+                            {incident.type}
+                          </span>
+                        </div>
+                        <div className="text-xs text-zinc-300 flex items-center gap-1 mt-1">
+                          <CameraIcon className="w-4 h-4 text-zinc-400" />
+                          {incident.camera.name + " : " + "Camera " + incident.camera.id}
+                        </div>
+                        <div className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
+                          <Clock className="w-4 h-4 text-zinc-400" />
+                          {new Date(incident.tsStart).toLocaleString()} - {new Date(incident.tsEnd).toLocaleString()}
+                        </div>
                       </div>
-                      <div className="text-xs text-zinc-300 flex items-center gap-1 mt-1">
-                        <CameraIcon className="w-4 h-4 text-zinc-400" />
-                        {incident.camera.name + " : " + "Camera " + incident.camera.id}
-                      </div>
-                      <div className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
-                        <Clock className="w-4 h-4 text-zinc-400" />
-                        {new Date(incident.tsStart).toLocaleString()} - {new Date(incident.tsEnd).toLocaleString()}
-                      </div>
+                      <button
+                        className={`ml-2 text-xs md:text-sm font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
+                          isResolving 
+                            ? 'text-zinc-500 cursor-not-allowed' 
+                            : 'text-yellow-400 hover:text-yellow-300'
+                        }`}
+                        onClick={() => !isResolving && handleResolve(incident.id)}
+                        disabled={isResolving}
+                      >
+                        {isResolving ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Resolving...
+                          </>
+                        ) : (
+                          <>
+                            Resolve <ChevronRight className="w-4 h-4" />
+                          </>
+                        )}
+                      </button>
                     </div>
-                    <button
-                      className="ml-2 text-yellow-400 text-xs md:text-sm font-semibold flex items-center gap-1 hover:text-yellow-300 transition-colors cursor-pointer"
-                      onClick={() => handleResolve(incident.id)}
-                    >
-                      Resolve <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>

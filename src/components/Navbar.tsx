@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Menu, X, ChevronDown, Users, AlertTriangle, Clapperboard, Camera, LayoutDashboard } from 'lucide-react';
+import { Menu, X, ChevronDown, Users, AlertTriangle, Clapperboard, Camera, LayoutDashboard, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 // Placeholder logo SVG
 const LogoIcon = () => (
@@ -38,6 +40,18 @@ const navItems = [
 
 const Navbar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   return (
     <nav
@@ -73,7 +87,7 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* Right: User Info (hidden on mobile) */}
-          <div className="hidden md:flex items-center gap-3 ml-4">
+          <div className="hidden md:flex items-center gap-3 ml-4 relative">
             <img
               src="https://randomuser.me/api/portraits/men/32.jpg"
               alt="User avatar"
@@ -86,9 +100,23 @@ const Navbar: React.FC = () => {
             <button
               aria-label="Open user menu"
               className="ml-1 p-1 rounded hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500"
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
             >
-              <ChevronDown className="w-5 h-5 text-zinc-400" />
+              <ChevronDown className={`w-5 h-5 text-zinc-400 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
             </button>
+            
+            {/* User Dropdown Menu */}
+            {userMenuOpen && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-zinc-900 border border-zinc-700 rounded-lg shadow-lg z-50">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-left text-zinc-200 hover:bg-zinc-800 hover:text-red-400 transition-colors rounded-lg"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Mobile: Hamburger */}
@@ -134,13 +162,15 @@ const Navbar: React.FC = () => {
                 <span className="font-semibold text-sm leading-tight">Mohammed Ajhas</span>
                 <span className="text-xs text-zinc-400 leading-tight">ajhas@mandlac.com</span>
               </div>
-              <button
-                aria-label="Open user menu"
-                className="ml-1 p-1 rounded hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500"
-              >
-                <ChevronDown className="w-5 h-5 text-zinc-400" />
-              </button>
             </div>
+            {/* Mobile Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-2 rounded transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500 text-sm font-medium text-zinc-200 hover:text-red-400 hover:bg-zinc-800 mt-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
           </div>
         </div>
       )}
